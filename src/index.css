@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-white;
+  }
+}
+
+.dark-map-tiles {
+  filter: invert(100%) grayscale(100%) brightness(80%) contrast(120%);
+}
+
+.leaflet-container {
+  background-color: #18181b !important;
+}
