@@ -1,0 +1,34 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / Dependencies
+node_modules/
+
+# Build folders
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Env variables (CRITICAL)
+.env
+.env.*
+!.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Output
+server/npm-debug.log*
