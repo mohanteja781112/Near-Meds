@@ -56,7 +56,7 @@ const FindMedsButton = ({ onLocationFound, onError }) => {
       ) : (
         <>
           <MapPin className="w-5 h-5" />
-          <span>Find Meds Near Me</span>
+          <span>Find Hospitals Near me</span>
         </>
       )}
     </button>

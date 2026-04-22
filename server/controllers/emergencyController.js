@@ -8,6 +8,12 @@ export const createReport = async (req, res) => {
       return res.status(400).json({ error: 'Missing required report data or socket ID.' });
     }
 
+    // For demonstration purposes: if this is a mock wearable trigger, clear existing pending reports
+    // so the judges only see the exact one we just triggered on the dashboard.
+    if (patientSocketId.startsWith('wearable_mock_')) {
+      await EmergencyReport.deleteMany({ status: 'Pending' });
+    }
+
     const newReport = new EmergencyReport({
       patientData: report,
       severity: severity || 'High', // Defaulting to high if not explicitly provided

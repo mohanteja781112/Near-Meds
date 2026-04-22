@@ -94,7 +94,7 @@ const FindMedsPage = () => {
       const token = localStorage.getItem('token');
       const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
       
-      const response = await axios.get(`http://localhost:5000/api/pharmacies/nearest?latitude=${location.lat}&longitude=${location.lng}`, config);
+      const response = await axios.get(`/api/pharmacies/nearest?latitude=${location.lat}&longitude=${location.lng}`, config);
       
       const results = response.data?.data;
       if (Array.isArray(results)) {

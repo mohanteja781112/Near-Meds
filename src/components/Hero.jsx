@@ -112,7 +112,7 @@ const Hero = () => {
                     className="flex items-center justify-center space-x-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-cyan-500/25 transform hover:-translate-y-1"
                   >
                     <Search className="w-5 h-5" />
-                    <span>Find Meds Now</span>
+                    <span>Find Hospitals Now</span>
                   </button>
                   <button 
                     onClick={() => navigate('/hospital-dashboard')}
@@ -129,7 +129,7 @@ const Hero = () => {
                     className="flex items-center justify-center space-x-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:shadow-cyan-500/25 transform hover:-translate-y-1"
                   >
                     <Search className="w-5 h-5" />
-                    <span>Find Meds Now</span>
+                    <span>Find Hospitals Now</span>
                   </button>
                   <button 
                     onClick={() => navigate('/dashboard')}

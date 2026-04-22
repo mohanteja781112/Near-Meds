@@ -12,6 +12,8 @@ const AboutPage = () => {
   
   const navigate = useNavigate();
 
+  
+
   // Parallax and fade effects
   const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacityFade = useTransform(scrollYProgress, [0, 0.2], [1, 0]);

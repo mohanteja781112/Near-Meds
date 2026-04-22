@@ -44,6 +44,7 @@ const EmergencyChatbot = () => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [skippedAbha, setSkippedAbha] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   const abhaRecords = {
     bloodGroup: "O+",
@@ -87,7 +88,7 @@ const EmergencyChatbot = () => {
 
   // Initialize Socket.io Connection
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io('');
     
     newSocket.on('connect', () => {
       console.log('Patient socket connected:', newSocket.id);
@@ -143,7 +144,7 @@ const EmergencyChatbot = () => {
              window.dispatchEvent(new CustomEvent('broadcast-failed'));
           }, 15000); // 15 seconds timeout
 
-          await fetch('http://localhost:5000/api/emergency/create-report', {
+          await fetch('/api/emergency/create-report', {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },
              body: JSON.stringify({
@@ -181,12 +182,13 @@ const EmergencyChatbot = () => {
     }
   }, [messages, isTyping, showDownloadConfirm, showHospitalConfirm]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isTyping) return;
+  const handleSend = async (overrideText = null) => {
+    const textToSend = typeof overrideText === 'string' ? overrideText : input;
+    if (!textToSend.trim() || isTyping) return;
 
     const userMessage = {
       role: 'user',
-      text: input,
+      text: textToSend,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -204,10 +206,10 @@ const EmergencyChatbot = () => {
 
     // Frontend heuristic check
     const symptomKeywords = ['fever', 'pain', 'headache', 'vomiting', 'chest pain', 'breathing', 'symptoms', 'cough', 'injury'];
-    const hasSymptoms = symptomKeywords.some(keyword => input.toLowerCase().includes(keyword));
+    const hasSymptoms = symptomKeywords.some(keyword => textToSend.toLowerCase().includes(keyword));
 
     try {
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -275,11 +277,44 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
     }
   };
 
+  const toggleListening = () => {
+    if (isListening) return; // already listening
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice recognition is not supported in this browser. Please type your emergency.");
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    
+    recognition.onstart = () => setIsListening(true);
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      handleSend(transcript);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognition.start();
+  };
+
   const handleGeneratePDF = async () => {
     if (!reportData) return;
     setIsGeneratingPDF(true);
     try {
-      const response = await fetch('http://localhost:5000/api/chat/generate-report', {
+      const response = await fetch('/api/chat/generate-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ report: reportData }),
@@ -318,7 +353,7 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        await fetch('http://localhost:5000/api/chat/save-report', {
+        await fetch('/api/chat/save-report', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -648,7 +683,20 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
             )}
 
             {/* Input Area */}
-            <div className="p-4 bg-white/5 border-t border-white/10">
+            <div className="p-4 bg-white/5 border-t border-white/10 flex flex-col gap-3">
+              <button 
+                onClick={toggleListening}
+                className={cn(
+                   "w-full py-3 rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest text-xs transition-all shadow-lg",
+                   isListening 
+                     ? "bg-red-500/20 text-red-500 border border-red-500 animate-pulse shadow-red-500/20" 
+                     : "bg-cyan-500/10 text-cyan-500 border border-cyan-500/30 hover:bg-cyan-500/20"
+                )}
+              >
+                <Mic className={cn("w-5 h-5", isListening && "animate-bounce")} />
+                {isListening ? "LISTENING... SPEAK NOW" : "VOICE AI TRIAGE (TAP TO SPEAK)"}
+              </button>
+              
               <div className="relative flex items-center gap-2">
                 <div className="flex-1 relative">
                   <input
@@ -656,17 +704,14 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Describe your emergency..."
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-4 pr-10 text-sm text-white focus:outline-none focus:border-[#08CB00]/50 transition-colors placeholder:text-gray-500"
+                    placeholder="Or type your emergency..."
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-4 pr-4 text-sm text-white focus:outline-none focus:border-[#08CB00]/50 transition-colors placeholder:text-gray-500"
                   />
-                  <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#08CB00] transition-colors">
-                    <Mic className="w-4 h-4" />
-                  </button>
                 </div>
                 <button 
-                  onClick={handleSend}
+                  onClick={() => handleSend()}
                   disabled={!input.trim()}
-                  className="w-11 h-11 bg-[#08CB00] rounded-2xl flex items-center justify-center shadow-lg shadow-[#08CB00]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100"
+                  className="w-11 h-11 bg-[#08CB00] rounded-2xl flex items-center justify-center shadow-lg shadow-[#08CB00]/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shrink-0"
                 >
                   <Send className="w-5 h-5 text-white" />
                 </button>

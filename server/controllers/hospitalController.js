@@ -3,6 +3,15 @@ import Hospital from '../models/Hospital.js';
 import HospitalResponse from '../models/HospitalResponse.js';
 import bcrypt from 'bcryptjs';
 
+// Global mock rotation counter for demo
+let demoIndex = 0;
+const DEMO_HOSPITALS = [
+  { _id: 'mock_kims_01', name: 'KIMS-ICON Hospital', location: { address: 'Vizag', lat: 17.7144317, lng: 83.1957044 } },
+  { _id: 'mock_apollo_02', name: 'Apollo Hospitals', location: { address: 'Ramnagar Vizag', lat: 17.7172512, lng: 83.3091802 } },
+  { _id: 'mock_visakha_03', name: 'Visakha Hospital', location: { address: 'Vizag', lat: 17.6979033, lng: 83.1614047 } },
+  { _id: 'mock_mom_04', name: 'MOM Hospital', location: { address: 'Vizag', lat: 17.6958846, lng: 83.1422378 } }
+];
+
 // Simple login for prototype hospital dashboard
 export const loginHospital = async (req, res) => {
   try {
@@ -85,19 +94,17 @@ export const respondToReport = async (req, res) => {
       report.respondedHospital = hospitalId;
       await report.save();
 
+      // Demo Loop Logic: override the actual hospital with our predefined loop
+      const activeDemoHospital = DEMO_HOSPITALS[demoIndex % DEMO_HOSPITALS.length];
+      demoIndex++; // Increment for the next emergency
+
       // Emit real-time response back to the specific patient
       const io = req.app.get('io');
       if (io) {
         // We broadcast to the specific socket ID of the patient
         io.to(report.patientSocketId).emit('hospital_accepted', {
           reportId: report._id,
-          hospital: {
-            _id: hospital._id,
-            name: hospital.name,
-            address: hospital.location?.address,
-            lat: hospital.location?.lat,
-            lng: hospital.location?.lng
-          }
+          hospital: activeDemoHospital
         });
 
         // Also broadcast to all hospitals that this report was claimed

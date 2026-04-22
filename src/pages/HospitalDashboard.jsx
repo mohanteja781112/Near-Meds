@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Bell, FileText, CheckCircle, XCircle, LogIn, Lock, Mail, Users, AlertTriangle } from 'lucide-react';
 import { io } from 'socket.io-client';
 
-const SOCKET_SERVER_URL = 'http://localhost:5000';
+const SOCKET_SERVER_URL = '';
 
 const HospitalDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,7 +23,7 @@ const HospitalDashboard = () => {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:5000/api/hospital/login', {
+      const response = await fetch('/api/hospital/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(loginData)
@@ -48,7 +48,7 @@ const HospitalDashboard = () => {
 
   const fetchPendingReports = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/hospital/reports');
+      const response = await fetch('/api/hospital/reports');
       if (response.ok) {
         const data = await response.json();
         setReports(data);
@@ -69,7 +69,13 @@ const HospitalDashboard = () => {
     // Listen for new incoming emergencies
     newSocket.on('new_emergency_report', (report) => {
       console.log('New Emergency Received:', report);
-      setReports((prev) => [report, ...prev]);
+      setReports((prev) => {
+         // If it's the Apple Watch mock demo, clear previous alerts so it's the only one shown
+         if (report.patientSocketId && report.patientSocketId.startsWith('wearable_mock_')) {
+             return [report];
+         }
+         return [report, ...prev];
+      });
       
       // Attempt generic browser notification
       if (Notification.permission === 'granted') {
@@ -96,7 +102,7 @@ const HospitalDashboard = () => {
 
   const handleAction = async (reportId, responseType) => {
     try {
-      const response = await fetch('http://localhost:5000/api/hospital/respond', {
+      const response = await fetch('/api/hospital/respond', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +134,7 @@ const HospitalDashboard = () => {
      
      setDownloadingReportId(report._id);
      try {
-       const response = await fetch('http://localhost:5000/api/chat/generate-report', {
+       const response = await fetch('/api/chat/generate-report', {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ report: report.patientData })

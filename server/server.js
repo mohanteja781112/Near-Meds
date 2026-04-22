@@ -39,6 +39,7 @@ io.on('connection', (socket) => {
     console.log(`Socket ${socket.id} joined 'hospitals' room`);
   });
 
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });

@@ -148,7 +148,7 @@ const DashboardPage = () => {
                     <button 
                       onClick={async () => {
                          try {
-                           const response = await fetch('http://localhost:5000/api/chat/generate-report', {
+                           const response = await fetch('/api/chat/generate-report', {
                              method: 'POST',
                              headers: { 'Content-Type': 'application/json' },
                              body: JSON.stringify({ report: report })
