@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Bell, FileText, CheckCircle, XCircle, LogIn, Lock, Mail, Users, AlertTriangle } from 'lucide-react';
 import { io } from 'socket.io-client';
-import { hospitalLogin, fetchHospitalReports, respondToEmergency, generateMedicalReport } from '../../services/api';
+import { hospitalLogin, fetchHospitalReports, respondToEmergency, generateMedicalReport } from '../services/api';
 
 const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 

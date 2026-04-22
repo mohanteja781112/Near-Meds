@@ -3,7 +3,7 @@ import axios from 'axios';
 import MapComponent from '../components/Map/MapComponent';
 import FindMedsButton from '../components/Map/FindMedsButton';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { fetchNearestPharmacies } from '../../services/api';
+import { fetchNearestPharmacies } from '../services/api';
 import { AlertTriangle, Navigation, Sparkles } from 'lucide-react';
 
 import HospitalScanList from '../components/Map/HospitalScanList';
