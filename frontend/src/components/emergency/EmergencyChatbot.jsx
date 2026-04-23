@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Mic, Brain, Activity, MapPin, ShieldAlert, HeartPulse, FileText, Check, UserCircle, Key, Database } from 'lucide-react';
+import { MessageSquare, X, Send, Mic, Brain, Activity, MapPin, ShieldAlert, HeartPulse, FileText, Check, UserCircle, Key, Database, CheckCircle2, Copy, Play, SkipForward } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import { jsPDF } from 'jspdf';
 import SendReportButton from './SendReportButton';
-import { sendChatMessage, generateMedicalReport, saveMedicalReport, createEmergencyReport } from '../../services/api';
+import { generateChatResponse, saveMedicalReport, createEmergencyReport } from '../../services/api';
 
 /**
  * Utility for tailwind classes merging
@@ -299,14 +300,85 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
     if (!reportData) return;
     setIsGeneratingPDF(true);
     try {
-      const response = await generateMedicalReport(reportData);
-      const blob = response.data;
-      const url = window.URL.createObjectURL(blob);
+      // Generate PDF entirely on the client side to bypass Render backend limitations
+      const doc = new jsPDF();
+      let yPos = 20;
+      const margin = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const textWidth = pageWidth - margin * 2;
+
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(0, 200, 255); // NearMeds Cyan
+      doc.text("NearMeds Medical Report", margin, yPos);
+      yPos += 10;
+      
+      doc.setFontSize(11);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, yPos);
+      yPos += 20;
+
+      // Urgency
+      doc.setFontSize(16);
+      if (reportData.urgency_level?.toLowerCase().includes('critical') || reportData.urgency_level?.toLowerCase().includes('high')) {
+        doc.setTextColor(255, 50, 50); // Red
+      } else if (reportData.urgency_level?.toLowerCase().includes('moderate')) {
+        doc.setTextColor(255, 165, 0); // Orange
+      } else {
+        doc.setTextColor(50, 200, 50); // Green
+      }
+      doc.text(`Urgency Level: ${reportData.urgency_level?.toUpperCase() || 'UNKNOWN'}`, margin, yPos);
+      yPos += 25;
+
+      // Sections
+      const sections = [
+        { title: "Patient Summary", text: reportData.patient_summary },
+        { title: "Possible Conditions", text: reportData.possible_conditions },
+        { title: "Recommendations", text: reportData.recommendations },
+        { title: "Precautions", text: reportData.precautions },
+        { title: "Seek Immediate Care If", text: reportData.when_to_seek_immediate_care }
+      ];
+
+      sections.forEach(sec => {
+        if (!sec.text) return;
+        
+        // Title
+        doc.setFontSize(14);
+        doc.setTextColor(40, 40, 40);
+        doc.text(sec.title, margin, yPos);
+        yPos += 8;
+
+        // body
+        doc.setFontSize(11);
+        doc.setTextColor(80, 80, 80);
+        const splitText = doc.splitTextToSize(sec.text, textWidth);
+        
+        // Page break logic
+        if (yPos + (splitText.length * 6) > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+
+        doc.text(splitText, margin, yPos);
+        yPos += (splitText.length * 6) + 15;
+      });
+
+      // Disclaimer footer at the bottom of the last page
+      doc.setFontSize(9);
+      doc.setTextColor(180, 0, 0); // Warning red
+      const disclaimerText = "MEDICAL DISCLAIMER: " + (reportData.disclaimer || "This is not formal medical advice. Seek a physician immediately.");
+      const disclaimer = doc.splitTextToSize(disclaimerText, textWidth);
+      doc.text(disclaimer, margin, 280);
+
+      // Save to blob
+      const pdfBlob = doc.output('blob');
+      const url = window.URL.createObjectURL(pdfBlob);
+      
       setReportData(prev => ({ ...prev, pdfUrl: url }));
       setShowDownloadConfirm(true);
     } catch (err) {
-      console.error('PDF Error:', err);
-      setError('Could not generate PDF. Please try again.');
+      console.error('Client PDF Generation Error:', err);
+      setError('Could not generate PDF locally. Please try again.');
     } finally {
       setIsGeneratingPDF(false);
     }
