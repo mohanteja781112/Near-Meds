@@ -7,8 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
-const isGroq = process.env.OPENAI_API_KEY?.startsWith('gsk_');
-const isGrok = process.env.OPENAI_API_KEY?.startsWith('xai-');
+const isGroq = process.env.AI_API_KEY?.startsWith('gsk_');
+const isGrok = process.env.AI_API_KEY?.startsWith('xai-');
 
 const getBaseURL = () => {
   if (isGroq) return 'https://api.groq.com/openai/v1';
@@ -23,7 +23,7 @@ const getDefaultModel = () => {
 };
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.AI_API_KEY,
   baseURL: getBaseURL()
 });
 
