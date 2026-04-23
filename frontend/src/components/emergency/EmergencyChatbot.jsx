@@ -90,7 +90,8 @@ const EmergencyChatbot = () => {
 
   // Initialize Socket.io Connection
   useEffect(() => {
-    const newSocket = io('');
+    const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const newSocket = io(SOCKET_SERVER_URL);
     
     newSocket.on('connect', () => {
       console.log('Patient socket connected:', newSocket.id);
