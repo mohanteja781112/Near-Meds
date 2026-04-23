@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { jsPDF } from 'jspdf';
 import SendReportButton from './SendReportButton';
-import { generateChatResponse, saveMedicalReport, createEmergencyReport } from '../../services/api';
+import { sendChatMessage, saveMedicalReport, createEmergencyReport } from '../../services/api';
 
 /**
  * Utility for tailwind classes merging
