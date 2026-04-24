@@ -12,6 +12,7 @@ const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authView, setAuthView] = useState('login');
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -21,11 +22,13 @@ const Navbar = () => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    setRole(localStorage.getItem('role'));
 
     // Listen for storage events (login/logout from other tabs or components)
     const handleStorageChange = () => {
       const updatedUser = localStorage.getItem('user');
       setUser(updatedUser ? JSON.parse(updatedUser) : null);
+      setRole(localStorage.getItem('role'));
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -47,6 +50,13 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const handleAdminLogout = () => {
+    localStorage.removeItem('role');
+    setRole(null);
+    window.dispatchEvent(new Event('auth-change'));
+    navigate('/');
+  };
+
   const openAuthModal = (view) => {
     setAuthView(view);
     setIsAuthModalOpen(true);
@@ -55,9 +65,14 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Find Hospitals', href: '/find-meds' },
-    { name: 'Hospital Dashboard', href: '/hospital-dashboard' },
+    { name: 'Find Hospitals', href: '/find-meds' }
   ];
+
+  if (role === 'admin') {
+    navLinks.push({ name: 'Hospital Dashboard', href: '/hospital-dashboard' });
+  } else {
+    navLinks.push({ name: 'Admin Portal', href: '/admin-login' });
+  }
 
   return (
     <>
@@ -150,6 +165,14 @@ const Navbar = () => {
                       />
                     </div>
                   )}
+                  {role === 'admin' && (
+                    <button
+                      onClick={handleAdminLogout}
+                      className="text-emerald-400 hover:text-emerald-300 transition-colors duration-300 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider border border-emerald-500/30 bg-emerald-500/10 ml-2"
+                    >
+                      Admin Logout
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -186,6 +209,17 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                 ))}
+                {role === 'admin' && (
+                  <div className="pt-4 pb-2 space-y-3 px-3 border-t border-zinc-800 mt-2">
+                    <button
+                      onClick={handleAdminLogout}
+                      className="w-full text-left px-2 py-2 text-emerald-400 hover:text-emerald-300 transition-colors font-bold uppercase tracking-wider text-sm"
+                    >
+                      Admin Logout
+                    </button>
+                  </div>
+                )}
+                
                 {user && (
                   <div className="pt-4 pb-2 space-y-3 px-3 border-t border-zinc-800 mt-2">
                     <div className="space-y-3">

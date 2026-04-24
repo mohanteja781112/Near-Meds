@@ -9,35 +9,36 @@ const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000
 const HospitalDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hospitalInfo, setHospitalInfo] = useState(null);
-  const [loginData, setLoginData] = useState({ email: 'demo@hospital.com', password: 'password123' });
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const [reports, setReports] = useState([]);
   const [socket, setSocket] = useState(null);
   const [error, setError] = useState('');
   const [downloadingReportId, setDownloadingReportId] = useState(null);
 
-  // Authentication Logic
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoggingIn(true);
-    setError('');
-    
-    try {
-      const response = await hospitalLogin(loginData);
-      
-      if (response.status === 200) {
-        setHospitalInfo(response.data);
-        setIsAuthenticated(true);
-        fetchPendingReports();
-        initializeSocket();
+  // Auto-login to backend for socket/reports since we are already authenticated via AdminLoginPage
+  useEffect(() => {
+    const autoLogin = async () => {
+      try {
+        const response = await hospitalLogin({ email: 'demo@hospital.com', password: 'password123' });
+        if (response.status === 200) {
+          setHospitalInfo(response.data);
+          setIsAuthenticated(true);
+          // Wait briefly before fetching reports and initializing sockets to ensure state is updated
+          setTimeout(() => {
+            fetchPendingReports();
+            initializeSocket();
+          }, 100);
+        }
+      } catch (err) {
+        console.error('Failed to auto-initialize backend session', err);
+        setError('Server Connection Error. Dashboard might not be live.');
       }
-    } catch (err) {
-      setError(err.response?.data?.error || 'Server Error. Ensure backend is running.');
-    } finally {
-      setIsLoggingIn(false);
+    };
+    
+    if (!isAuthenticated) {
+      autoLogin();
     }
-  };
+  }, []);
 
   const fetchPendingReports = async () => {
     try {
@@ -143,63 +144,16 @@ const HospitalDashboard = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#0B1220] flex items-center justify-center p-4">
-        {/* Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
         
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 rounded-2xl p-8 w-full max-w-md relative z-10"
-        >
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
-              <Activity className="w-8 h-8 text-emerald-400" />
-            </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Hospital Portal</h1>
-            <p className="text-zinc-400">Sign in to coordinate emergency cases.</p>
+        <div className="flex flex-col items-center gap-4 relative z-10">
+          <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+            <div className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
           </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm text-center">{error}</div>}
-            
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                <Mail className="w-4 h-4" /> Email Address
-              </label>
-              <input
-                type="email"
-                required
-                value={loginData.email}
-                onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
-                placeholder="Hospital Admin Email"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                <Lock className="w-4 h-4" /> Password
-              </label>
-              <input
-                type="password"
-                required
-                value={loginData.password}
-                onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                className="w-full bg-black/50 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoggingIn}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl mt-6 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-            >
-              {isLoggingIn ? <div className="flex items-center gap-2.5"><div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /><span className="text-sm">Connecting to server...</span></div> : <><LogIn className="w-5 h-5" /> Sign In</>}
-            </button>
-            <p className="text-center text-xs text-zinc-500 mt-4">Demo credentials pre-filled automatically for testing.</p>
-          </form>
-        </motion.div>
+          <h2 className="text-xl font-bold text-white">Initializing Dashboard...</h2>
+          <p className="text-zinc-400 text-sm">Connecting to secure medical network</p>
+          {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
+        </div>
       </div>
     );
   }

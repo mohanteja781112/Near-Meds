@@ -10,6 +10,16 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import HospitalDashboard from './pages/HospitalDashboard';
 import EmergencyChatbot from './components/emergency/EmergencyChatbot';
+import AdminLoginPage from './pages/AdminLoginPage';
+import { Navigate } from 'react-router-dom';
+
+const ProtectedAdminRoute = ({ children }) => {
+  const role = localStorage.getItem('role');
+  if (role !== 'admin') {
+    return <Navigate to="/admin-login" replace />;
+  }
+  return children;
+};
 
 const App = () => {
   return (
@@ -25,7 +35,8 @@ const App = () => {
           <Route path="/find-meds" element={<FindMedsPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/hospital-dashboard" element={<HospitalDashboard />} />
+          <Route path="/admin-login" element={<AdminLoginPage />} />
+          <Route path="/hospital-dashboard" element={<ProtectedAdminRoute><HospitalDashboard /></ProtectedAdminRoute>} />
         </Routes>
         
         {/* Global AI Emergency Assistant */}
