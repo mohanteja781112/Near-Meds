@@ -74,7 +74,6 @@ const Navbar = () => {
     navLinks.push({ name: 'Admin Dashboard', href: '/admin-dashboard' });
   } else if (!user) {
     navLinks.push({ name: 'Hospital Portal', href: '/hospital-login' });
-    navLinks.push({ name: 'Admin Login', href: '/admin-login' });
   }
 
   return (

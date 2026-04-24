@@ -5,12 +5,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Search, ShieldAlert, LogIn, User } from 'lucide-react';
 import MedicalPin from './3d/MedicalPin';
-import AdminPasswordModal from './Auth/AdminPasswordModal';
 import AuthModal from './Auth/AuthModal';
 
 const Hero = () => {
   const navigate = useNavigate();
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -98,7 +96,7 @@ const Hero = () => {
                     <span>User Login</span>
                   </button>
                   <button 
-                    onClick={() => setIsAdminModalOpen(true)}
+                    onClick={() => navigate('/admin-login')}
                     className="flex items-center justify-center space-x-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 px-8 py-4 rounded-xl font-semibold backdrop-blur-md transition-all group"
                   >
                     <ShieldAlert className="w-5 h-5 text-gray-400 group-hover:text-cyan-400 transition-colors" />
@@ -168,12 +166,6 @@ const Hero = () => {
       
       {/* Decorative gradient overlay at bottom */}
       <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-black to-transparent z-10 pointer-events-none"></div>
-      
-      {/* Admin Password Modal */}
-      <AdminPasswordModal 
-        isOpen={isAdminModalOpen} 
-        onClose={() => setIsAdminModalOpen(false)} 
-      />
       
       {/* User Auth Modal */}
       <AuthModal 
