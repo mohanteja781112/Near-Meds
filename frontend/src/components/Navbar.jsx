@@ -68,10 +68,13 @@ const Navbar = () => {
     { name: 'Find Hospitals', href: '/find-meds' }
   ];
 
-  if (role === 'admin') {
-    navLinks.push({ name: 'Hospital Dashboard', href: '/hospital-dashboard' });
-  } else {
-    navLinks.push({ name: 'Admin Portal', href: '/admin-login' });
+  if (role === 'hospital') {
+    navLinks.push({ name: 'Hospital Portal', href: '/hospital-dashboard' });
+  } else if (role === 'admin') {
+    navLinks.push({ name: 'Admin Dashboard', href: '/admin-dashboard' });
+  } else if (!user) {
+    navLinks.push({ name: 'Hospital Portal', href: '/hospital-login' });
+    navLinks.push({ name: 'Admin Login', href: '/admin-login' });
   }
 
   return (
@@ -168,9 +171,17 @@ const Navbar = () => {
                   {role === 'admin' && (
                     <button
                       onClick={handleAdminLogout}
-                      className="text-emerald-400 hover:text-emerald-300 transition-colors duration-300 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider border border-emerald-500/30 bg-emerald-500/10 ml-2"
+                      className="text-purple-400 hover:text-purple-300 transition-colors duration-300 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider border border-purple-500/30 bg-purple-500/10 ml-2"
                     >
                       Admin Logout
+                    </button>
+                  )}
+                  {role === 'hospital' && (
+                    <button
+                      onClick={handleAdminLogout}
+                      className="text-emerald-400 hover:text-emerald-300 transition-colors duration-300 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider border border-emerald-500/30 bg-emerald-500/10 ml-2"
+                    >
+                      Hospital Logout
                     </button>
                   )}
                 </div>
@@ -213,9 +224,19 @@ const Navbar = () => {
                   <div className="pt-4 pb-2 space-y-3 px-3 border-t border-zinc-800 mt-2">
                     <button
                       onClick={handleAdminLogout}
-                      className="w-full text-left px-2 py-2 text-emerald-400 hover:text-emerald-300 transition-colors font-bold uppercase tracking-wider text-sm"
+                      className="w-full text-left px-2 py-2 text-purple-400 hover:text-purple-300 transition-colors font-bold uppercase tracking-wider text-sm"
                     >
                       Admin Logout
+                    </button>
+                  </div>
+                )}
+                {role === 'hospital' && (
+                  <div className="pt-4 pb-2 space-y-3 px-3 border-t border-zinc-800 mt-2">
+                    <button
+                      onClick={handleAdminLogout}
+                      className="w-full text-left px-2 py-2 text-emerald-400 hover:text-emerald-300 transition-colors font-bold uppercase tracking-wider text-sm"
+                    >
+                      Hospital Logout
                     </button>
                   </div>
                 )}

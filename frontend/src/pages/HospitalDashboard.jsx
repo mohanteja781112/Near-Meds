@@ -15,7 +15,7 @@ const HospitalDashboard = () => {
   const [error, setError] = useState('');
   const [downloadingReportId, setDownloadingReportId] = useState(null);
 
-  // Auto-login to backend for socket/reports since we are already authenticated via AdminLoginPage
+  // Auto-login to backend for socket/reports since we are already authenticated via HospitalLoginPage
   useEffect(() => {
     const autoLogin = async () => {
       try {

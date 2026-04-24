@@ -9,14 +9,24 @@ import FindMedsPage from './pages/FindMedsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import HospitalDashboard from './pages/HospitalDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import EmergencyChatbot from './components/emergency/EmergencyChatbot';
 import AdminLoginPage from './pages/AdminLoginPage';
+import HospitalLoginPage from './pages/HospitalLoginPage';
 import { Navigate } from 'react-router-dom';
 
 const ProtectedAdminRoute = ({ children }) => {
   const role = localStorage.getItem('role');
   if (role !== 'admin') {
-    return <Navigate to="/admin-login" replace />;
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
+const ProtectedHospitalRoute = ({ children }) => {
+  const role = localStorage.getItem('role');
+  if (role !== 'hospital') {
+    return <Navigate to="/" replace />;
   }
   return children;
 };
@@ -36,7 +46,9 @@ const App = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin-login" element={<AdminLoginPage />} />
-          <Route path="/hospital-dashboard" element={<ProtectedAdminRoute><HospitalDashboard /></ProtectedAdminRoute>} />
+          <Route path="/hospital-login" element={<HospitalLoginPage />} />
+          <Route path="/admin-dashboard" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+          <Route path="/hospital-dashboard" element={<ProtectedHospitalRoute><HospitalDashboard /></ProtectedHospitalRoute>} />
         </Routes>
         
         {/* Global AI Emergency Assistant */}
