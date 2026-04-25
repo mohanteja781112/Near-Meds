@@ -65,7 +65,9 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Home', href: '/' },
-    { name: 'Find Hospitals', href: '/find-meds' }
+    { name: 'Find Hospitals', href: '/find-meds' },
+    { name: 'About', href: '/about' },
+    { name: 'Contact', href: '/contact' }
   ];
 
   if (role === 'hospital') {
@@ -98,49 +100,6 @@ const Navbar = () => {
             {/* Desktop Menu */}
             <div className="hidden md:block">
               <div className="ml-10 flex items-center space-x-8">
-                <button 
-                  onClick={async () => {
-                    try {
-                      // 1. Send the background API request
-                      await createEmergencyReport({
-                           report: {
-                             patient_summary: "[Apple Watch Series 9 API] Severe Irregular Rhythm and SpO2 drop detected. Patient unresponsive.",
-                             possible_conditions: "Cardiac Arrest / Myocardial Infarction",
-                             urgency_level: "Critical",
-                             recommendations: "Dispatch ambulance immediately.",
-                             precautions: "Patient is alone. Monitor vitals on arrival."
-                           },
-                           severity: 'Critical',
-                           location: window.__lastUserLocation || { lat: 20.5937, lng: 78.9629 },
-                           patientSocketId: "wearable_mock_" + Date.now()
-                      });
-                      
-                      // 2. Play Web Audio API alarm sound immediately
-                      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                      const oscillator = audioCtx.createOscillator();
-                      const gainNode = audioCtx.createGain();
-                      oscillator.type = 'square';
-                      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                      oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.2);
-                      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime + 0.4);
-                      oscillator.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.6);
-                      
-                      oscillator.connect(gainNode);
-                      gainNode.connect(audioCtx.destination);
-                      oscillator.start();
-                      gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 1.0);
-                      setTimeout(() => oscillator.stop(), 1000);
-
-                      // 3. Navigate directly to the dashboard to see the emergency popup
-                      navigate('/hospital-dashboard');
-                      
-                    } catch(e) { console.error(e); }
-                  }}
-                  className="text-rose-400 hover:text-rose-300 transition-colors duration-300 px-3 py-1.5 rounded-md text-[10px] font-bold tracking-widest uppercase border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)] flex items-center gap-2"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                  IoT Webhook Test
-                </button>
 
                 {navLinks.map((link) => (
                   <Link
