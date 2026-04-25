@@ -139,24 +139,6 @@ const Hero = () => {
                 </>
               )}
             </div>
-
-            {/* Sub-links for About and Contact */}
-            <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500">
-              <button 
-                onClick={() => navigate('/about')}
-                className="hover:text-cyan-400 transition-colors flex items-center gap-1 group"
-              >
-                About Project
-                <span className="w-0 h-px bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-              </button>
-              <button 
-                onClick={() => navigate('/contact')}
-                className="hover:text-cyan-400 transition-colors flex items-center gap-1 group"
-              >
-                Contact Us
-                <span className="w-0 h-px bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
-              </button>
-            </div>
             
             {/* Stats */}
             <div className="mt-12 grid grid-cols-3 gap-6 border-t border-white/10 pt-8">
