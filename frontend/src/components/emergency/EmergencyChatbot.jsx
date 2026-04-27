@@ -245,6 +245,7 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
 
         setReportData({
           ...(data.structured_report || {}),
+          report_id: `NM-${Math.floor(Math.random() * 900000 + 100000)}`,
           patient_summary: injectedSummary,
           possible_conditions: data.structured_report?.possible_conditions || "Please consult a doctor for diagnosis.",
           urgency_level: data.structured_report?.urgency_level || "Moderate",
@@ -301,75 +302,105 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
     if (!reportData) return;
     setIsGeneratingPDF(true);
     try {
-      // Generate PDF entirely on the client side to bypass Render backend limitations
       const doc = new jsPDF();
-      let yPos = 20;
+      let yPos = 25;
       const margin = 20;
       const pageWidth = doc.internal.pageSize.getWidth();
       const textWidth = pageWidth - margin * 2;
 
-      // Header
-      doc.setFontSize(22);
-      doc.setTextColor(0, 200, 255); // NearMeds Cyan
-      doc.text("NearMeds Medical Report", margin, yPos);
-      yPos += 10;
-      
-      doc.setFontSize(11);
-      doc.setTextColor(150, 150, 150);
-      doc.text(`Generated on: ${new Date().toLocaleString()}`, margin, yPos);
-      yPos += 20;
+      // Colors
+      const primaryBlue = [0, 102, 255];
+      const cyanAccent = [0, 180, 255];
+      const darkText = [40, 40, 40];
+      const lightGrayText = [120, 120, 120];
 
-      // Urgency
-      doc.setFontSize(16);
-      if (reportData.urgency_level?.toLowerCase().includes('critical') || reportData.urgency_level?.toLowerCase().includes('high')) {
-        doc.setTextColor(255, 50, 50); // Red
-      } else if (reportData.urgency_level?.toLowerCase().includes('moderate')) {
-        doc.setTextColor(255, 165, 0); // Orange
-      } else {
-        doc.setTextColor(50, 200, 50); // Green
-      }
-      doc.text(`Urgency Level: ${reportData.urgency_level?.toUpperCase() || 'UNKNOWN'}`, margin, yPos);
-      yPos += 25;
+      // --- Header ---
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(24);
+      doc.setTextColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+      doc.text("NearMeds AI", margin, yPos);
 
-      // Sections
-      const sections = [
-        { title: "Patient Summary", text: reportData.patient_summary },
-        { title: "Possible Conditions", text: reportData.possible_conditions },
-        { title: "Recommendations", text: reportData.recommendations },
-        { title: "Precautions", text: reportData.precautions },
-        { title: "Seek Immediate Care If", text: reportData.when_to_seek_immediate_care }
-      ];
+      // Metadata (Top Right)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(lightGrayText[0], lightGrayText[1], lightGrayText[2]);
+      const reportId = reportData.report_id || `NM-${Math.floor(Math.random() * 900000 + 100000)}`;
+      doc.text(`Report ID: ${reportId}`, pageWidth - margin, yPos - 5, { align: "right" });
+      doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, yPos, { align: "right" });
 
-      sections.forEach(sec => {
-        if (!sec.text) return;
-        
-        // Title
-        doc.setFontSize(14);
-        doc.setTextColor(40, 40, 40);
-        doc.text(sec.title, margin, yPos);
-        yPos += 8;
+      yPos += 8;
+      // Horizontal Line Divider
+      doc.setDrawColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
+      doc.setLineWidth(1);
+      doc.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 15;
 
-        // body
-        doc.setFontSize(11);
-        doc.setTextColor(80, 80, 80);
-        const splitText = doc.splitTextToSize(sec.text, textWidth);
-        
-        // Page break logic
-        if (yPos + (splitText.length * 6) > 270) {
+      // --- Sections ---
+      const renderSection = (title, text, isUrgency = false) => {
+        if (!text && !isUrgency) return;
+
+        // Check for page break
+        if (yPos > 250) {
           doc.addPage();
-          yPos = 20;
+          yPos = 25;
         }
 
-        doc.text(splitText, margin, yPos);
-        yPos += (splitText.length * 6) + 15;
-      });
+        // Section Accent Bar
+        doc.setFillColor(cyanAccent[0], cyanAccent[1], cyanAccent[2]);
+        doc.rect(margin, yPos - 5, 2, 8, 'F');
 
-      // Disclaimer footer at the bottom of the last page
-      doc.setFontSize(9);
-      doc.setTextColor(180, 0, 0); // Warning red
+        // Section Title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(darkText[0], darkText[1], darkText[2]);
+        doc.text(title, margin + 6, yPos);
+        yPos += 10;
+
+        if (isUrgency) {
+          const urgency = reportData.urgency_level?.toUpperCase() || 'MODERATE';
+          let badgeColor = [255, 250, 200]; // Default yellow
+          let textColor = [180, 140, 0];   // Default dark yellow
+          
+          if (urgency.includes('HIGH') || urgency.includes('CRITICAL')) {
+            badgeColor = [255, 240, 220]; // Light orange
+            textColor = [230, 81, 0];    // Deep orange
+          } else if (urgency.includes('LOW')) {
+            badgeColor = [232, 245, 233]; // Light green
+            textColor = [46, 125, 50];   // Dark green
+          }
+
+          // Draw Badge
+          doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
+          doc.roundedRect(margin + 6, yPos - 5, 25, 8, 2, 2, 'F');
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+          doc.text(urgency, margin + 18.5, yPos + 0.5, { align: "center" });
+          yPos += 15;
+        } else {
+          // Section Body
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(11);
+          doc.setTextColor(80, 80, 80);
+          const splitText = doc.splitTextToSize(text, textWidth - 10);
+          doc.text(splitText, margin + 6, yPos);
+          yPos += (splitText.length * 6) + 10;
+        }
+      };
+
+      renderSection("Patient Symptom Summary", reportData.patient_summary);
+      renderSection("Urgency Level", null, true);
+      renderSection("Possible Conditions", reportData.possible_conditions);
+      renderSection("Recommendations & Care", reportData.recommendations);
+      renderSection("Precautions", reportData.precautions);
+      renderSection("Seek Immediate Care If", reportData.when_to_seek_immediate_care);
+
+      // --- Disclaimer Footer ---
       const disclaimerText = "MEDICAL DISCLAIMER: " + (reportData.disclaimer || "This is not formal medical advice. Seek a physician immediately.");
+      doc.setFontSize(8);
+      doc.setTextColor(180, 0, 0);
       const disclaimer = doc.splitTextToSize(disclaimerText, textWidth);
-      doc.text(disclaimer, margin, 280);
+      doc.text(disclaimer, margin, 285);
 
       // Save to blob
       const pdfBlob = doc.output('blob');
