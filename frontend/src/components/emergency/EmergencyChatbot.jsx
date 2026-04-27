@@ -316,45 +316,45 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
 
       // --- Header ---
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(24);
+      doc.setFontSize(20);
       doc.setTextColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
       doc.text("NearMeds AI", margin, yPos);
 
       // Metadata (Top Right)
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setTextColor(lightGrayText[0], lightGrayText[1], lightGrayText[2]);
       const reportId = reportData.report_id || `NM-${Math.floor(Math.random() * 900000 + 100000)}`;
       doc.text(`Report ID: ${reportId}`, pageWidth - margin, yPos - 5, { align: "right" });
       doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - margin, yPos, { align: "right" });
 
-      yPos += 8;
+      yPos += 6;
       // Horizontal Line Divider
       doc.setDrawColor(primaryBlue[0], primaryBlue[1], primaryBlue[2]);
-      doc.setLineWidth(1);
+      doc.setLineWidth(0.8);
       doc.line(margin, yPos, pageWidth - margin, yPos);
-      yPos += 15;
+      yPos += 12;
 
       // --- Sections ---
       const renderSection = (title, text, isUrgency = false) => {
         if (!text && !isUrgency) return;
 
         // Check for page break
-        if (yPos > 250) {
+        if (yPos > 260) {
           doc.addPage();
           yPos = 25;
         }
 
         // Section Accent Bar
         doc.setFillColor(cyanAccent[0], cyanAccent[1], cyanAccent[2]);
-        doc.rect(margin, yPos - 5, 2, 8, 'F');
+        doc.rect(margin, yPos - 4, 1.5, 6, 'F');
 
         // Section Title
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(14);
+        doc.setFontSize(12);
         doc.setTextColor(darkText[0], darkText[1], darkText[2]);
-        doc.text(title, margin + 6, yPos);
-        yPos += 10;
+        doc.text(title, margin + 5, yPos);
+        yPos += 8;
 
         if (isUrgency) {
           const urgency = reportData.urgency_level?.toUpperCase() || 'MODERATE';
@@ -371,20 +371,20 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
 
           // Draw Badge
           doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
-          doc.roundedRect(margin + 6, yPos - 5, 25, 8, 2, 2, 'F');
-          doc.setFontSize(9);
+          doc.roundedRect(margin + 5, yPos - 4.5, 22, 6, 1.5, 1.5, 'F');
+          doc.setFontSize(8);
           doc.setFont("helvetica", "bold");
           doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-          doc.text(urgency, margin + 18.5, yPos + 0.5, { align: "center" });
-          yPos += 15;
+          doc.text(urgency, margin + 16, yPos, { align: "center" });
+          yPos += 12;
         } else {
           // Section Body
           doc.setFont("helvetica", "normal");
-          doc.setFontSize(11);
+          doc.setFontSize(10);
           doc.setTextColor(80, 80, 80);
           const splitText = doc.splitTextToSize(text, textWidth - 10);
-          doc.text(splitText, margin + 6, yPos);
-          yPos += (splitText.length * 6) + 10;
+          doc.text(splitText, margin + 5, yPos);
+          yPos += (splitText.length * 5) + 10;
         }
       };
 
@@ -397,7 +397,7 @@ ${data.structured_report?.patient_summary || "Symptoms discussed in chat."}`;
 
       // --- Disclaimer Footer ---
       const disclaimerText = "MEDICAL DISCLAIMER: " + (reportData.disclaimer || "This is not formal medical advice. Seek a physician immediately.");
-      doc.setFontSize(8);
+      doc.setFontSize(7);
       doc.setTextColor(180, 0, 0);
       const disclaimer = doc.splitTextToSize(disclaimerText, textWidth);
       doc.text(disclaimer, margin, 285);
